@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Surf Check</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Surf Check">
+<meta name="theme-color" content="#4F46E5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Roboto+Mono:wght@400;700&family=Roboto+Serif:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bgMain: #F7F3EE;
+  --bgCard: #FFFFFF;
+  --accentBlue: #6366f1;
+  --accentBlueHover: #4f46e5;
+  --accentPurple: #a855f7;
+  --accentGreen: #10b981;
+  --accentRed: #ef4444;
+  --textPrimary: #1C1917;
+  --textSecondary: #57534E;
+  --textWarm: #2A2520;
+  --textWarmSecondary: #7C6F5A;
+  --textWarmMuted: #A0937B;
+  --borderColor: #E8E0D2;
+  --borderSubtle: #F0EBE3;
+  --indigo-2: #818CF8;
+  --indigo-soft: rgba(99,102,241,0.09);
+  --indigo-line: rgba(99,102,241,0.30);
+  --line: #DDD1C3;
+  --shadow-sm: 0 1px 2px rgba(17,17,17,0.04), 0 1px 3px rgba(17,17,17,0.06);
+  --shadow-md: 0 4px 12px rgba(17,17,17,0.06), 0 2px 4px rgba(17,17,17,0.04);
+  --shadow-lg: 0 16px 40px rgba(17,17,17,0.10), 0 4px 12px rgba(17,17,17,0.06);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Roboto Serif', Georgia, Cambria, serif;
+  --font-mono: 'Roboto Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background: var(--bgMain); font-family: var(--font-sans); color: var(--textPrimary); min-height: 100vh; }
+
+/* ---------- Hero ---------- */
+.hero { background: linear-gradient(150deg,#4F46E5 0%,#6366F1 100%); color:#fff; padding: calc(env(safe-area-inset-top, 0px) + 44px) 24px 96px; text-align:center; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 2px); background-size: 40px 40px; pointer-events:none; }
+.hero .kicker { font-family: var(--font-mono); font-size:11px; letter-spacing:0.34em; text-transform:uppercase; opacity:.9; }
+.hero h1 { font-family: var(--font-serif); font-size: 2.7rem; letter-spacing:-.5px; line-height:1.08; margin: 10px 0 8px; }
+.hero .today { font-family: var(--font-mono); font-size: .78rem; letter-spacing:.12em; text-transform:uppercase; opacity:.85; }
+
+/* ---------- Beach tabs ---------- */
+.tabs { display:flex; justify-content:center; gap:8px; margin-top:26px; position:relative; z-index:2; flex-wrap:wrap; }
+.tab { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); color:#fff; border-radius:10px; padding: 10px 18px; font-family: var(--font-sans); font-weight:600; font-size:.9rem; cursor:pointer; transition: transform .2s, background .2s, box-shadow .2s; }
+.tab:hover { transform: translateY(-2px); background: rgba(255,255,255,.22); }
+.tab.active { background:#fff; color: var(--accentBlueHover); box-shadow: var(--shadow-md); }
+.tab .sub { display:block; font-family: var(--font-mono); font-weight:400; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; opacity:.75; margin-top:2px; }
+
+/* ---------- Layout ---------- */
+.wrap { max-width: 1020px; margin: -56px auto 60px; padding: 0 20px calc(env(safe-area-inset-bottom, 0px) + 20px); position:relative; z-index:2; }
+.grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .hero h1 { font-size: 2.2rem; } }
+
+.card { background: var(--bgCard); border: 1px solid var(--borderColor); border-top: 4px solid var(--accentBlue); border-radius: 16px; box-shadow: var(--shadow-md); padding: 20px 22px; animation: fadeUp .35s ease-out; transition: transform .2s, box-shadow .2s; }
+.card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+@keyframes fadeUp { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform: translateY(0);} }
+
+.card .label { display:flex; align-items:center; gap:8px; font-family: var(--font-mono); font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color: var(--textWarmSecondary); margin-bottom:14px; }
+.card .label svg { color: var(--accentBlue); }
+.big { font-size: 2.1rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--textWarm); line-height:1.1; }
+.big .unit { font-size: 1rem; font-weight: 600; color: var(--textWarmMuted); margin-left:2px; }
+.detail { margin-top:10px; font-size:.9rem; color: var(--textSecondary); line-height:1.55; }
+.detail strong { color: var(--textWarm); }
+.dirRow { display:inline-flex; align-items:center; gap:6px; }
+.dirRow svg { color: var(--accentBlue); }
+
+/* ---------- Tide card ---------- */
+.tideCard { margin-top:16px; }
+.tideCard:hover { transform:none; }
+canvas#tideCanvas { width:100%; height:150px; display:block; margin-top:6px; }
+canvas#tideCanvas[hidden] { display:none !important; }
+.tideList { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+.tidePill { font-family: var(--font-mono); font-size:.72rem; letter-spacing:.05em; padding: 6px 12px; border-radius: 20px; background: var(--indigo-soft); border:1px solid var(--indigo-line); color: var(--accentBlueHover); font-variant-numeric: tabular-nums; }
+.tidePill.low { background: #FBF3E2; border-color: #EBD9A8; color: #B4791F; }
+
+/* ---------- Journal ---------- */
+.journal { margin-top:16px; }
+.journal:hover { transform:none; }
+.journal textarea { width:100%; min-height:76px; border:1px solid var(--borderColor); border-radius:10px; padding:12px 14px; font-family: var(--font-sans); font-size:16px; color: var(--textPrimary); background:#fff; resize: vertical; outline:none; transition: border .15s, box-shadow .15s; }
+.journal textarea:focus { border-color: var(--accentBlue); box-shadow: 0 0 0 3px var(--indigo-soft); }
+.journalRow { display:flex; align-items:center; gap:12px; margin-top:10px; }
+.btnPrimary { background: var(--accentBlue); color:#fff; border:none; border-radius:10px; padding: 11px 20px; font-family: var(--font-sans); font-weight:600; font-size:.92rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition: background .15s, transform .15s; }
+.btnPrimary:hover { background: var(--accentBlueHover); transform: translateY(-1px); }
+.btnPrimary:disabled { opacity:.5; cursor: default; transform:none; }
+.saveStatus { font-family: var(--font-mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color: var(--accentGreen); opacity:0; transition: opacity .3s; }
+.saveStatus.show { opacity:1; }
+.entries { margin-top:18px; display:flex; flex-direction:column; gap:10px; }
+.entry { border:1px solid var(--borderSubtle); border-left: 3px solid var(--indigo-2); border-radius: 10px; padding: 12px 14px; background:#fff; animation: fadeUp .35s ease-out; display:flex; gap:12px; align-items:flex-start; }
+.entry .when { font-family: var(--font-mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color: var(--textWarmMuted); white-space:nowrap; padding-top:2px; }
+.entry .text { flex:1; font-size:.92rem; color: var(--textPrimary); line-height:1.5; overflow-wrap: anywhere; }
+.entry .del { background:none; border:none; cursor:pointer; color: var(--textWarmMuted); padding:2px; border-radius:6px; transition: color .15s, background .15s; }
+.entry .del:hover { color: var(--accentRed); background: rgba(239,68,68,.08); }
+.emptyNote { font-size:.88rem; color: var(--textWarmMuted); }
+.loading { font-family: var(--font-mono); font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color: var(--textWarmMuted); }
+.spin { animation: rot 1s linear infinite; display:inline-block; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.errNote { font-size:.85rem; color: var(--accentRed); }
+footer { text-align:center; font-family: var(--font-mono); font-size:.64rem; letter-spacing:.16em; text-transform:uppercase; color: var(--textWarmMuted); padding: 0 20px 34px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">NorCal Daily Report</div>
+  <h1>Surf Check</h1>
+  <div class="today" id="todayLine">Loading date</div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main class="wrap">
+  <section class="grid">
+    <div class="card">
+      <div class="label">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>
+        Swell
+      </div>
+      <div id="swellBody"><span class="loading"><span class="spin">&#9676;</span> Loading</span></div>
+    </div>
+    <div class="card">
+      <div class="label">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+        Wind
+      </div>
+      <div id="windBody"><span class="loading"><span class="spin">&#9676;</span> Loading</span></div>
+    </div>
+    <div class="card">
+      <div class="label">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+        Weather
+      </div>
+      <div id="wxBody"><span class="loading"><span class="spin">&#9676;</span> Loading</span></div>
+    </div>
+  </section>
+
+  <section class="card tideCard">
+    <div class="label">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Tide <span id="tideStation" style="letter-spacing:.08em; opacity:.7;"></span>
+    </div>
+    <div id="tideBody"><span class="loading"><span class="spin">&#9676;</span> Loading</span></div>
+    <canvas id="tideCanvas" hidden></canvas>
+    <div class="tideList" id="tideList"></div>
+  </section>
+
+  <section class="card journal">
+    <div class="label">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Session Journal <span id="journalBeach" style="letter-spacing:.08em; opacity:.7;"></span>
+    </div>
+    <textarea id="journalText" placeholder="How was it out there?"></textarea>
+    <div class="journalRow">
+      <button class="btnPrimary" id="saveBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Log Session
+      </button>
+      <span class="saveStatus" id="saveStatus">Saved</span>
+    </div>
+    <div class="entries" id="entries"><span class="emptyNote">No sessions logged yet.</span></div>
+  </section>
+</main>
+
+<footer>Data: Open-Meteo + NOAA Tides &amp; Currents</footer>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyBk_7fY9VbLla_2fePNqFTNehGJxkM3wYk',
+  authDomain: 'd4sg-sa-class.firebaseapp.com',
+  projectId: 'd4sg-sa-class',
+  appId: '1:348558190261:web:45acfd179a20b7343cc0fc'
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+
+const BEACHES = [
+  { id: 'bolinas', name: 'Bolinas',      sub: 'Point Reyes',  lat: 37.906,  lng: -122.686,  station: '9414958', stationName: 'Bolinas Lagoon' },
+  { id: 'dillon',  name: 'Dillon Beach', sub: 'Marin County', lat: 38.2494, lng: -122.9661, station: '9415469', stationName: 'Tomales Bay Entrance' },
+  { id: 'salmon',  name: 'Salmon Creek', sub: 'Sonoma Coast', lat: 38.3520, lng: -123.0666, station: '9415625', stationName: 'Bodega Harbor' }
+];
+let current = BEACHES[0];
+let unsubJournal = null;
+const $ = id => document.getElementById(id);
+
+/* ---------- Date line ---------- */
+function drawToday() {
+  const now = new Date();
+  $('todayLine').textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }) +
+    ' · ' + now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
+drawToday();
+setInterval(drawToday, 30000);
+
+/* ---------- Tabs ---------- */
+const tabsEl = $('tabs');
+BEACHES.forEach(b => {
+  const btn = document.createElement('button');
+  btn.className = 'tab';
+  btn.innerHTML = b.name + '<span class="sub">' + b.sub + '</span>';
+  btn.onclick = () => selectBeach(b, btn);
+  btn.dataset.id = b.id;
+  tabsEl.appendChild(btn);
+});
+function selectBeach(b, btn) {
+  current = b;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.id === b.id));
+  loadConditions(b);
+  watchJournal(b);
+}
+
+/* ---------- Helpers ---------- */
+const M_TO_FT = 3.28084;
+const compass = d => ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5) % 16];
+const WMO = { 0:'Clear sky', 1:'Mostly clear', 2:'Partly cloudy', 3:'Overcast', 45:'Fog', 48:'Fog', 51:'Light drizzle', 53:'Drizzle', 55:'Heavy drizzle', 61:'Light rain', 63:'Rain', 65:'Heavy rain', 66:'Freezing rain', 67:'Freezing rain', 71:'Snow', 73:'Snow', 75:'Heavy snow', 77:'Snow grains', 80:'Light showers', 81:'Showers', 82:'Heavy showers', 85:'Snow showers', 86:'Snow showers', 95:'Thunderstorm', 96:'Thunderstorm', 99:'Thunderstorm' };
+const arrow = deg => '<svg style="transform:rotate(' + (deg + 180) + 'deg)" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>';
+const fmtTime = d => d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+/* ---------- Conditions ---------- */
+async function loadConditions(b) {
+  $('swellBody').innerHTML = $('windBody').innerHTML = $('wxBody').innerHTML = $('tideBody').innerHTML =
+    '<span class="loading"><span class="spin">&#9676;</span> Loading</span>';
+  $('tideCanvas').hidden = true;
+  $('tideList').innerHTML = '';
+  $('tideStation').textContent = '· ' + b.stationName;
+  loadMarine(b); loadWeather(b); loadTides(b);
+}
+
+async function loadMarine(b) {
+  try {
+    const r = await fetch('https://marine-api.open-meteo.com/v1/marine?latitude=' + b.lat + '&longitude=' + b.lng +
+      '&hourly=swell_wave_height,swell_wave_period,swell_wave_direction,wave_height&timezone=America/Los_Angeles&forecast_days=1');
+    const j = await r.json();
+    const h = j.hourly;
+    const i = Math.min(new Date().getHours(), h.time.length - 1);
+    const swellFt = (h.swell_wave_height[i] * M_TO_FT).toFixed(1);
+    const totalFt = (h.wave_height[i] * M_TO_FT).toFixed(1);
+    const per = Math.round(h.swell_wave_period[i]);
+    const dir = Math.round(h.swell_wave_direction[i]);
+    $('swellBody').innerHTML =
+      '<div class="big">' + swellFt + '<span class="unit">ft</span></div>' +
+      '<div class="detail"><strong>' + per + ' s</strong> period · from <span class="dirRow"><strong>' + compass(dir) + '</strong> ' + arrow(dir) + '</span><br>Total wave height <strong>' + totalFt + ' ft</strong></div>';
+  } catch (e) {
+    $('swellBody').innerHTML = '<span class="errNote">Swell data unavailable right now.</span>';
+  }
+}
+
+async function loadWeather(b) {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + b.lat + '&longitude=' + b.lng +
+      '&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Los_Angeles&forecast_days=1');
+    const j = await r.json();
+    const c = j.current;
+    $('windBody').innerHTML =
+      '<div class="big">' + Math.round(c.wind_speed_10m) + '<span class="unit">mph</span></div>' +
+      '<div class="detail">from <span class="dirRow"><strong>' + compass(c.wind_direction_10m) + '</strong> ' + arrow(c.wind_direction_10m) + '</span></div>';
+    $('wxBody').innerHTML =
+      '<div class="big">' + Math.round(c.temperature_2m) + '<span class="unit">&deg;F</span></div>' +
+      '<div class="detail"><strong>' + (WMO[c.weather_code] || 'Conditions n/a') + '</strong> · high ' + Math.round(j.daily.temperature_2m_max[0]) + '&deg;F</div>';
+  } catch (e) {
+    $('windBody').innerHTML = $('wxBody').innerHTML = '<span class="errNote">Weather unavailable right now.</span>';
+  }
+}
+
+async function loadTides(b) {
+  try {
+    const d = new Date();
+    const ymd = x => x.getFullYear() + String(x.getMonth() + 1).padStart(2, '0') + String(x.getDate()).padStart(2, '0');
+    const y = new Date(d); y.setDate(d.getDate() - 1);
+    const t = new Date(d); t.setDate(d.getDate() + 1);
+    const r = await fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=surf-check&begin_date=' + ymd(y) +
+      '&end_date=' + ymd(t) + '&datum=MLLW&station=' + b.station + '&time_zone=lst_ldt&units=english&interval=hilo&format=json');
+    const j = await r.json();
+    const ext = j.predictions.map(p => ({ t: new Date(p.t.replace(' ', 'T')), v: parseFloat(p.v), type: p.type }));
+
+    const now = new Date();
+    const next = ext.find(e => e.t > now);
+    const prev = [...ext].reverse().find(e => e.t <= now);
+    const rising = next && next.type === 'H';
+    $('tideBody').innerHTML =
+      '<div class="big">' + (next ? fmtTime(next.t) : '--') + '<span class="unit">next ' + (next ? (next.type === 'H' ? 'high' : 'low') : '') + '</span></div>' +
+      '<div class="detail">Tide is <strong>' + (rising ? 'rising' : 'falling') + '</strong>' +
+      (next ? ' toward <strong>' + next.v.toFixed(1) + ' ft</strong>' : '') +
+      (prev ? ' · last ' + (prev.type === 'H' ? 'high' : 'low') + ' ' + fmtTime(prev.t) : '') + '</div>';
+
+    const todayList = ext.filter(e => e.t.toDateString() === now.toDateString());
+    $('tideList').innerHTML = todayList.map(e =>
+      '<span class="tidePill' + (e.type === 'L' ? ' low' : '') + '">' + (e.type === 'H' ? 'HIGH' : 'LOW') + ' ' + fmtTime(e.t) + ' · ' + e.v.toFixed(1) + ' FT</span>'
+    ).join('');
+
+    drawTideCurve(ext, now);
+  } catch (e) {
+    $('tideBody').innerHTML = '<span class="errNote">Tide data unavailable right now.</span>';
+  }
+}
+
+let lastExt = null;
+function drawTideCurve(ext, now) {
+  lastExt = ext;
+  const cv = $('tideCanvas');
+  cv.hidden = false;
+  const cssW = cv.clientWidth, cssH = 150, dpr = window.devicePixelRatio || 1;
+  if (!cssW) { requestAnimationFrame(() => drawTideCurve(ext, new Date())); return; }
+  cv.width = cssW * dpr; cv.height = cssH * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const day0 = new Date(now); day0.setHours(0, 0, 0, 0);
+  const day1 = new Date(day0); day1.setDate(day0.getDate() + 1);
+  const x = time => ((time - day0) / (day1 - day0)) * cssW;
+
+  // cosine interpolation between consecutive extremes
+  const pts = [];
+  for (let m = 0; m <= 24 * 60; m += 10) {
+    const time = new Date(day0.getTime() + m * 60000);
+    let a = ext[0], bnd = ext[ext.length - 1];
+    for (let k = 0; k < ext.length - 1; k++) {
+      if (ext[k].t <= time && ext[k + 1].t > time) { a = ext[k]; bnd = ext[k + 1]; break; }
+    }
+    const f = (time - a.t) / (bnd.t - a.t);
+    const v = a.v + (bnd.v - a.v) * (1 - Math.cos(Math.PI * Math.max(0, Math.min(1, f)))) / 2;
+    pts.push({ x: x(time), v });
+  }
+  const vs = pts.map(p => p.v);
+  const vMin = Math.min(...vs) - 0.5, vMax = Math.max(...vs) + 0.5;
+  const yOf = v => cssH - 24 - ((v - vMin) / (vMax - vMin)) * (cssH - 40);
+
+  // filled curve
+  ctx.beginPath();
+  pts.forEach((p, i) => i ? ctx.lineTo(p.x, yOf(p.v)) : ctx.moveTo(p.x, yOf(p.v)));
+  const grad = ctx.createLinearGradient(0, 0, 0, cssH);
+  grad.addColorStop(0, 'rgba(99,102,241,0.28)');
+  grad.addColorStop(1, 'rgba(99,102,241,0.02)');
+  ctx.lineTo(cssW, cssH); ctx.lineTo(0, cssH); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  ctx.beginPath();
+  pts.forEach((p, i) => i ? ctx.lineTo(p.x, yOf(p.v)) : ctx.moveTo(p.x, yOf(p.v)));
+  ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+
+  // hour ticks
+  ctx.fillStyle = '#A0937B'; ctx.font = '10px Roboto Mono'; ctx.textAlign = 'center';
+  [6, 12, 18].forEach(hr => {
+    const hx = (hr / 24) * cssW;
+    ctx.fillText(hr === 12 ? 'NOON' : (hr === 6 ? '6 AM' : '6 PM'), hx, cssH - 6);
+  });
+
+  // now marker
+  if (now >= day0 && now < day1) {
+    const nx = x(now);
+    ctx.strokeStyle = '#B4791F'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(nx, 8); ctx.lineTo(nx, cssH - 20); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#B4791F'; ctx.font = '700 10px Roboto Mono';
+    ctx.textAlign = nx > cssW - 40 ? 'right' : 'left';
+    ctx.fillText('NOW', nx + (nx > cssW - 40 ? -6 : 6), 16);
+  }
+}
+
+/* ---------- Journal ---------- */
+function watchJournal(b) {
+  $('journalBeach').textContent = '· ' + b.name;
+  if (unsubJournal) unsubJournal();
+  $('entries').innerHTML = '<span class="loading"><span class="spin">&#9676;</span> Loading</span>';
+  const q = query(collection(db, 'surfJournal'), where('beachId', '==', b.id));
+  unsubJournal = onSnapshot(q, snap => {
+    const items = [];
+    snap.forEach(s => { const d = s.data(); if (!d.deleted) items.push({ id: s.id, ...d }); });
+    items.sort((p, q2) => (q2.createdAt?.seconds || 0) - (p.createdAt?.seconds || 0));
+    renderEntries(items);
+  }, () => {
+    $('entries').innerHTML = '<span class="errNote">Journal is offline right now.</span>';
+  });
+}
+
+function renderEntries(items) {
+  const box = $('entries');
+  if (!items.length) { box.innerHTML = '<span class="emptyNote">No sessions logged yet.</span>'; return; }
+  box.innerHTML = '';
+  items.forEach(it => {
+    const when = it.createdAt ? new Date(it.createdAt.seconds * 1000) : new Date();
+    const row = document.createElement('div');
+    row.className = 'entry';
+    row.innerHTML =
+      '<span class="when">' + when.toLocaleDateString('en-US', { month:'short', day:'numeric' }) + '<br>' + fmtTime(when) + '</span>' +
+      '<span class="text"></span>' +
+      '<button class="del" title="Remove entry"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+    row.querySelector('.text').textContent = it.text;
+    row.querySelector('.del').onclick = () => updateDoc(doc(db, 'surfJournal', it.id), { deleted: true });
+    box.appendChild(row);
+  });
+}
+
+$('saveBtn').onclick = async () => {
+  const text = $('journalText').value.trim();
+  if (!text) return;
+  const btn = $('saveBtn');
+  btn.disabled = true;
+  try {
+    await addDoc(collection(db, 'surfJournal'), { beachId: current.id, text, createdAt: serverTimestamp() });
+    $('journalText').value = '';
+    const st = $('saveStatus');
+    st.classList.add('show');
+    setTimeout(() => st.classList.remove('show'), 2200);
+  } catch (e) {
+    alert('Could not save. Check your connection and try again.');
+  }
+  btn.disabled = false;
+};
+
+/* ---------- Go ---------- */
+selectBeach(BEACHES[0]);
+setInterval(() => loadConditions(current), 10 * 60 * 1000);
+window.addEventListener('resize', () => { if (lastExt) drawTideCurve(lastExt, new Date()); });
+</script>
+</body>
+</html>
