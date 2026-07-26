@@ -51,8 +51,13 @@ body { background: var(--bgMain); font-family: var(--font-sans); color: var(--te
 .hero .today { font-family: var(--font-mono); font-size: .78rem; letter-spacing:.12em; text-transform:uppercase; opacity:.85; }
 
 /* ---------- Beach tabs ---------- */
-.tabs { display:flex; justify-content:center; gap:8px; margin-top:26px; position:relative; z-index:2; flex-wrap:wrap; }
-.tab { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); color:#fff; border-radius:10px; padding: 10px 18px; font-family: var(--font-sans); font-weight:600; font-size:.9rem; cursor:pointer; transition: transform .2s, background .2s, box-shadow .2s; }
+.tabs { display:flex; justify-content:center; gap:8px; margin-top:26px; position:relative; z-index:2; flex-wrap:nowrap; padding: 0 12px; }
+.tab { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); color:#fff; border-radius:10px; padding: 10px 16px; font-family: var(--font-sans); font-weight:600; font-size:.9rem; white-space:nowrap; cursor:pointer; transition: transform .2s, background .2s, box-shadow .2s; }
+@media (max-width: 620px) {
+  .tabs { gap:5px; padding: 0 8px; }
+  .tab { flex:1 1 0; padding: 8px 2px; font-size:.7rem; border-radius:9px; }
+  .tab .sub { font-size:.48rem; letter-spacing:.05em; }
+}
 .tab:hover { transform: translateY(-2px); background: rgba(255,255,255,.22); }
 .tab.active { background:#fff; color: var(--accentBlueHover); box-shadow: var(--shadow-md); }
 .tab .sub { display:block; font-family: var(--font-mono); font-weight:400; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; opacity:.75; margin-top:2px; }
@@ -89,7 +94,11 @@ canvas#tideCanvas[hidden] { display:none !important; }
 .journal:hover { transform:none; }
 .journal textarea { width:100%; min-height:76px; border:1px solid var(--borderColor); border-radius:10px; padding:12px 14px; font-family: var(--font-sans); font-size:16px; color: var(--textPrimary); background:#fff; resize: vertical; outline:none; transition: border .15s, box-shadow .15s; }
 .journal textarea:focus { border-color: var(--accentBlue); box-shadow: 0 0 0 3px var(--indigo-soft); }
-.journalRow { display:flex; align-items:center; gap:12px; margin-top:10px; }
+.journalRow { display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap; }
+.nameInput { flex:1 1 160px; min-width:140px; border:1px solid var(--borderColor); border-radius:10px; padding:10px 14px; font-family: var(--font-sans); font-size:16px; color: var(--textPrimary); background:#fff; outline:none; transition: border .15s, box-shadow .15s; }
+.nameInput:focus { border-color: var(--accentBlue); box-shadow: 0 0 0 3px var(--indigo-soft); }
+.entry .who { display:block; font-weight:600; font-size:.8rem; color: var(--accentBlueHover); margin-bottom:2px; }
+.entry .who:empty { display:none; }
 .btnPrimary { background: var(--accentBlue); color:#fff; border:none; border-radius:10px; padding: 11px 20px; font-family: var(--font-sans); font-weight:600; font-size:.92rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition: background .15s, transform .15s; }
 .btnPrimary:hover { background: var(--accentBlueHover); transform: translateY(-1px); }
 .btnPrimary:disabled { opacity:.5; cursor: default; transform:none; }
@@ -160,6 +169,7 @@ footer { text-align:center; font-family: var(--font-mono); font-size:.64rem; let
     </div>
     <textarea id="journalText" placeholder="How was it out there?"></textarea>
     <div class="journalRow">
+      <input class="nameInput" id="journalName" placeholder="Your name (optional)" maxlength="60">
       <button class="btnPrimary" id="saveBtn">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Log Session
@@ -187,6 +197,7 @@ const db = getFirestore(initializeApp(firebaseConfig));
 const BEACHES = [
   { id: 'bolinas', name: 'Bolinas',      sub: 'Point Reyes',  lat: 37.906,  lng: -122.686,  station: '9414958', stationName: 'Bolinas Lagoon' },
   { id: 'dillon',  name: 'Dillon Beach', sub: 'Marin County', lat: 38.2494, lng: -122.9661, station: '9415469', stationName: 'Tomales Bay Entrance' },
+  { id: 'doran',   name: 'Doran Beach',  sub: 'Bodega Bay',   lat: 38.3132, lng: -123.0284, station: '9415625', stationName: 'Bodega Harbor' },
   { id: 'salmon',  name: 'Salmon Creek', sub: 'Sonoma Coast', lat: 38.3520, lng: -123.0666, station: '9415625', stationName: 'Bodega Harbor' }
 ];
 let current = BEACHES[0];
@@ -393,21 +404,28 @@ function renderEntries(items) {
     row.className = 'entry';
     row.innerHTML =
       '<span class="when">' + when.toLocaleDateString('en-US', { month:'short', day:'numeric' }) + '<br>' + fmtTime(when) + '</span>' +
-      '<span class="text"></span>' +
+      '<span class="text"><span class="who"></span><span class="body"></span></span>' +
       '<button class="del" title="Remove entry"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
-    row.querySelector('.text').textContent = it.text;
+    row.querySelector('.who').textContent = it.name || '';
+    row.querySelector('.body').textContent = it.text;
     row.querySelector('.del').onclick = () => updateDoc(doc(db, 'surfJournal', it.id), { deleted: true });
     box.appendChild(row);
   });
 }
 
+$('journalName').value = localStorage.getItem('surfcheck:name') || '';
+
 $('saveBtn').onclick = async () => {
   const text = $('journalText').value.trim();
   if (!text) return;
+  const name = $('journalName').value.trim().slice(0, 60);
+  localStorage.setItem('surfcheck:name', name);
   const btn = $('saveBtn');
   btn.disabled = true;
   try {
-    await addDoc(collection(db, 'surfJournal'), { beachId: current.id, text, createdAt: serverTimestamp() });
+    const entry = { beachId: current.id, text, createdAt: serverTimestamp() };
+    if (name) entry.name = name;
+    await addDoc(collection(db, 'surfJournal'), entry);
     $('journalText').value = '';
     const st = $('saveStatus');
     st.classList.add('show');
