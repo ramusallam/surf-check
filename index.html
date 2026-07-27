@@ -90,6 +90,20 @@ canvas#tideCanvas[hidden] { display:none !important; }
 .tidePill.low { background: #FBF3E2; border-color: #EBD9A8; color: #B4791F; }
 
 /* ---------- Journal ---------- */
+.camCard { margin-top:16px; }
+.camCard:hover { transform:none; }
+.camFrame { position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#0b0b12; margin-top:4px; box-shadow: var(--shadow-sm); }
+.camFrame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+.liveBadge { display:inline-flex; align-items:center; gap:6px; font-family: var(--font-mono); font-size:.64rem; letter-spacing:.16em; text-transform:uppercase; color: var(--accentRed); margin-top:10px; }
+.liveDot { width:8px; height:8px; border-radius:50%; background: var(--accentRed); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+.camLink { display:flex; align-items:center; justify-content:space-between; gap:14px; text-decoration:none; border:1px solid var(--borderColor); border-radius:12px; padding:18px 20px; margin-top:4px; background: linear-gradient(135deg, var(--indigo-soft), transparent); transition: border .15s, transform .15s, box-shadow .15s; }
+.camLink:hover { border-color: var(--accentBlue); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.camLink .lt { display:flex; align-items:center; gap:13px; }
+.camLink .lt svg { color: var(--accentBlue); flex-shrink:0; }
+.camLink .lname { display:block; font-weight:600; font-size:1rem; color: var(--textWarm); }
+.camLink .lsub { display:block; font-size:.8rem; color: var(--textWarmSecondary); margin-top:2px; }
+.camLink .go { color: var(--accentBlue); flex-shrink:0; }
 .journal { margin-top:16px; }
 .journal:hover { transform:none; }
 .journal textarea { width:100%; min-height:76px; border:1px solid var(--borderColor); border-radius:10px; padding:12px 14px; font-family: var(--font-sans); font-size:16px; color: var(--textPrimary); background:#fff; resize: vertical; outline:none; transition: border .15s, box-shadow .15s; }
@@ -162,6 +176,14 @@ footer { text-align:center; font-family: var(--font-mono); font-size:.64rem; let
     <div class="tideList" id="tideList"></div>
   </section>
 
+  <section class="card camCard">
+    <div class="label">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      Live Cam <span id="camLabel" style="letter-spacing:.08em; opacity:.7;"></span>
+    </div>
+    <div id="camBody"></div>
+  </section>
+
   <section class="card journal">
     <div class="label">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -195,10 +217,14 @@ const firebaseConfig = {
 const db = getFirestore(initializeApp(firebaseConfig));
 
 const BEACHES = [
-  { id: 'bolinas', name: 'Bolinas',      sub: 'Point Reyes',  lat: 37.906,  lng: -122.686,  station: '9414958', stationName: 'Bolinas Lagoon' },
-  { id: 'dillon',  name: 'Dillon Beach', sub: 'Marin County', lat: 38.2494, lng: -122.9661, station: '9415469', stationName: 'Tomales Bay Entrance' },
-  { id: 'doran',   name: 'Doran Beach',  sub: 'Bodega Bay',   lat: 38.3132, lng: -123.0284, station: '9415625', stationName: 'Bodega Harbor' },
-  { id: 'salmon',  name: 'Salmon Creek', sub: 'Sonoma Coast', lat: 38.3520, lng: -123.0666, station: '9415625', stationName: 'Bodega Harbor' }
+  { id: 'bolinas', name: 'Bolinas',      sub: 'Point Reyes',  lat: 37.906,  lng: -122.686,  station: '9414958', stationName: 'Bolinas Lagoon',
+    cam: { type: 'link', label: 'Bolinas on Surfline', url: 'https://www.surfline.com/surf-report/bolinas/5842041f4e65fad6a77089c2' } },
+  { id: 'dillon',  name: 'Dillon Beach', sub: 'Marin County', lat: 38.2494, lng: -122.9661, station: '9415469', stationName: 'Tomales Bay Entrance',
+    cam: { type: 'link', label: 'Dillon Beach cams', url: 'https://www.surf-forecast.com/breaks/Dillon-Beach/webcams/latest' } },
+  { id: 'doran',   name: 'Doran Beach',  sub: 'Bodega Bay',   lat: 38.3132, lng: -123.0284, station: '9415625', stationName: 'Bodega Harbor',
+    cam: { type: 'embed', id: 'ndOgMF6uLKU', label: 'Horseshoe Cove · Bodega Head' } },
+  { id: 'salmon',  name: 'Salmon Creek', sub: 'Sonoma Coast', lat: 38.3520, lng: -123.0666, station: '9415625', stationName: 'Bodega Harbor',
+    cam: { type: 'embed', id: 'ndOgMF6uLKU', label: 'Horseshoe Cove · Bodega Head (nearby)' } }
 ];
 let current = BEACHES[0];
 let unsubJournal = null;
@@ -227,7 +253,28 @@ function selectBeach(b, btn) {
   current = b;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.id === b.id));
   loadConditions(b);
+  renderCam(b);
   watchJournal(b);
+}
+
+/* ---------- Live cam ---------- */
+function renderCam(b) {
+  const body = $('camBody');
+  $('camLabel').textContent = b.cam ? '· ' + b.cam.label : '';
+  if (!b.cam) { body.innerHTML = ''; return; }
+  if (b.cam.type === 'embed') {
+    body.innerHTML =
+      '<div class="camFrame"><iframe src="https://www.youtube-nocookie.com/embed/' + b.cam.id +
+      '?autoplay=1&mute=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>' +
+      '<span class="liveBadge"><span class="liveDot"></span> Live now</span>';
+  } else {
+    body.innerHTML =
+      '<a class="camLink" href="' + b.cam.url + '" target="_blank" rel="noopener noreferrer">' +
+        '<span class="lt"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' +
+          '<span><span class="lname">' + b.cam.label + '</span><span class="lsub">Opens the live cam in a new tab</span></span></span>' +
+        '<svg class="go" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+      '</a>';
+  }
 }
 
 /* ---------- Helpers ---------- */
